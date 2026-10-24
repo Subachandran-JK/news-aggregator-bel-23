@@ -18,7 +18,15 @@ const registerUser = async ({ name, email, password, preferences = [] }) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    users.push({ id: crypto.randomUUID(), name: name.trim(), email, password: hashedPassword, preferences });
+    users.push({
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        email,
+        password: hashedPassword,
+        preferences,
+        readArticles: [],
+        favoriteArticles: [],
+    });
     await writeAll(users);
 };
 

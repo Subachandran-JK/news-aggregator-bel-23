@@ -3,6 +3,7 @@ const express = require('express');
 const { logger } = require('./middleware/loggerMiddleware');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const { initDataFile } = require('./models/userModel');
+const { startCacheRefresh } = require('./models/newsModel');
 const userRoutes = require('./routes/userRoutes');
 const preferencesRoutes = require('./routes/preferencesRoutes');
 const newsRoutes = require('./routes/newsRoutes');
@@ -36,6 +37,7 @@ initDataFile()
             }
             console.log(`Server is running on port ${PORT}`);
         });
+        startCacheRefresh();
     })
     .catch((err) => {
         console.error('Could not create the data file', err);
