@@ -6,7 +6,7 @@
     "type": "commonjs",
     "scripts": {
         "start": "node app.js",
-        "dev": "nodemon app.js",
+        "dev": "nodemon --ignore data/ app.js",
         "pretest": "node -e \"if (process.version.slice(1).split('.')[0] < 18) { console.error('Unsupported Node.js version, please use version 18'); process.exit(1); }\" && node -e \"require('fs').writeFileSync('data/users.json', '[]')\"",
         "test": "tap test/*.js --disable-coverage"
     },

@@ -4,6 +4,7 @@ const { logger } = require('./middleware/loggerMiddleware');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const { initDataFile } = require('./models/userModel');
 const userRoutes = require('./routes/userRoutes');
+const preferencesRoutes = require('./routes/preferencesRoutes');
 
 if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET is missing. Add it to your .env file (see .env.example)');
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/users', userRoutes); // OCP
+app.use('/users/preferences', preferencesRoutes); // OCP
 
 app.use(notFound);
 app.use(errorHandler);

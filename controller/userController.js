@@ -35,4 +35,26 @@ const loginUser = async ({ email, password }) => {
     return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
-module.exports = { registerUser, loginUser };
+const getPreferences = async (userId) => {
+    const users = await readAll();
+    const user = users.find((user) => user.id === userId);
+
+    if (!user) {
+        throw createError(404, 'User not found');
+    }
+    return user.preferences;
+};
+
+const updatePreferences = async (userId, preferences) => {
+    const users = await readAll();
+    const user = users.find((user) => user.id === userId);
+
+    if (!user) {
+        throw createError(404, 'User not found');
+    }
+    user.preferences = preferences;
+    await writeAll(users);
+    return user.preferences;
+};
+
+module.exports = { registerUser, loginUser, getPreferences, updatePreferences };
