@@ -6,7 +6,7 @@ const { createError } = require('../utils/createError');
 
 const SALT_ROUNDS = 10;
 
-// So Clark@Superman.com and clark@superman.com are the same account
+// Store emails in lowercase so the same email can't be registered twice
 const normalizeEmail = (email) => email.trim().toLowerCase();
 
 const registerUser = async ({ name, email, password, preferences = [] }) => {
@@ -34,7 +34,7 @@ const loginUser = async ({ email, password }) => {
     const users = await readAll();
     const user = users.find((user) => user.email === normalizeEmail(email));
 
-    // Same error for wrong email and wrong password so we don't leak which emails exist
+    // Same message for wrong email and wrong password, so nobody can check which emails are registered
     if (!user || !(await bcrypt.compare(password, user.password))) {
         throw createError(401, 'Invalid email or password');
     }

@@ -6,7 +6,7 @@ const { createError } = require('../utils/createError');
 const getNewsForUser = async (userId) => {
     const preferences = await getPreferences(userId);
 
-    // Nothing to search for, so skip the API call
+    // No preferences means nothing to search for
     if (preferences.length === 0) {
         return [];
     }
@@ -24,7 +24,7 @@ const searchNews = async (keyword) => {
 const saveArticle = async (userId, articleId, listName) => {
     const article = findCachedArticle(articleId);
     if (!article) {
-        throw createError(404, 'Article not found. Get /news or search first, then use an id from the results');
+        throw createError(404, 'Article not found, fetch the news first');
     }
 
     const users = await readAll();
@@ -33,7 +33,7 @@ const saveArticle = async (userId, articleId, listName) => {
         throw createError(404, 'User not found');
     }
 
-    // Users registered before this feature don't have the lists yet
+    // Older users might not have this list yet
     user[listName] = user[listName] || [];
     if (!user[listName].find((saved) => saved.id === articleId)) {
         user[listName].push(article);

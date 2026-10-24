@@ -2,9 +2,9 @@ const crypto = require('crypto');
 const axios = require('axios');
 const { createError } = require('../utils/createError');
 
-// Free NewsAPI plan allows 100 requests/day, so keep these generous
+// Free plan only gives 100 requests a day, so don't refresh too often
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-const UNUSED_AFTER_MS = 3 * 60 * 60 * 1000; // stop refreshing searches nobody used for 3 hours
+const UNUSED_AFTER_MS = 3 * 60 * 60 * 1000; // 3 hours
 
 const newsApi = axios.create({
     baseURL: 'https://newsapi.org/v2',
@@ -14,7 +14,7 @@ const newsApi = axios.create({
 // query -> { articles, fetchedAt, lastUsedAt }
 const cache = new Map();
 
-// NewsAPI articles have no id, so build a stable one from the url
+// Articles from NewsAPI don't have an id, so make one from the url
 const makeId = (url) => crypto.createHash('sha256').update(url).digest('hex').slice(0, 16);
 
 const formatArticle = (article) => ({
@@ -32,7 +32,7 @@ const requestArticles = async (query) => {
             params: { q: query, language: 'en', sortBy: 'publishedAt', pageSize: 20 },
             headers: { 'X-Api-Key': process.env.NEWS_API_KEY },
         });
-        // NewsAPI keeps deleted articles in results with the title "[Removed]"
+        // Deleted articles come back with the title "[Removed]"
         return response.data.articles.filter((article) => article.title !== '[Removed]').map(formatArticle);
     } catch (err) {
         // No response means timeout or network problem
@@ -62,7 +62,7 @@ const fetchArticles = async (query) => {
         cache.set(query, { articles, fetchedAt: now, lastUsedAt: now });
         return articles;
     } catch (err) {
-        // Old news is better than no news when the API is down
+        // If the API call fails, return the old cached articles if we have them
         if (entry) {
             entry.lastUsedAt = now;
             return entry.articles;
@@ -83,6 +83,7 @@ const findCachedArticle = (id) => {
 
 const refreshCache = async () => {
     for (const [query, entry] of cache) {
+        // Nobody asked for this search in a while, remove it instead of refreshing
         if (Date.now() - entry.lastUsedAt > UNUSED_AFTER_MS) {
             cache.delete(query);
             continue;
@@ -96,7 +97,7 @@ const refreshCache = async () => {
     }
 };
 
-// unref() so this timer alone doesn't keep the process running
+// unref() so the timer doesn't stop the process from exiting (e.g. in tests)
 const startCacheRefresh = () => setInterval(refreshCache, CACHE_TTL_MS).unref();
 
 module.exports = { fetchArticles, findCachedArticle, refreshCache, startCacheRefresh };
