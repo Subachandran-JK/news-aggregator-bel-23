@@ -2,14 +2,9 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { readAll, writeAll } = require('../models/userModel');
+const { createError } = require('../utils/createError');
 
 const SALT_ROUNDS = 10;
-
-const createError = (status, message) => {
-    const err = new Error(message);
-    err.status = status;
-    return err;
-};
 
 const registerUser = async ({ name, email, password, preferences = [] }) => {
     const users = await readAll();
