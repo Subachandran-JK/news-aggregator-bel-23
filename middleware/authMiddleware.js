@@ -12,7 +12,10 @@ const isAuthorized = (req, res, next) => {
     try {
         decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
-        return res.status(401).json({ message: 'Invalid or expired token' });
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired, please log in again' });
+        }
+        return res.status(401).json({ message: 'Invalid token' });
     }
 
     req.decodedToken = decodedToken;
